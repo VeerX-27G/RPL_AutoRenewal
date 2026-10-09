@@ -1,0 +1,39 @@
+name: RPL Auto Renewal
+
+on:
+  schedule:
+    # 15:00 UTC = 09:00 in Regina (Saskatchewan stays on UTC-6 all year, no DST).
+    # Change the hour to whatever time you want it to run.
+    - cron: "0 6 * * *"
+  workflow_dispatch: # lets you run it manually from the Actions tab
+
+permissions:
+  contents: read
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Google Chrome and chromedriver come preinstalled on ubuntu-latest;
+      # Selenium 4.6+ finds them automatically through Selenium Manager.
+      - name: Run library renewal
+        env:
+          BARCODE: ${{ secrets.BARCODE }}
+          PASSWORD: ${{ secrets.PASSWORD }}
+          EMAIL: ${{ secrets.EMAIL }}
+          SENDER_PASSWORD: ${{ secrets.SENDER_PASSWORD }}
+        run: python library_renewal.py
