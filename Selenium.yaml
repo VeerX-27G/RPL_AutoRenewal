@@ -4,7 +4,7 @@ on:
   schedule:
     # 15:00 UTC = 09:00 in Regina (Saskatchewan stays on UTC-6 all year, no DST).
     # Change the hour to whatever time you want it to run.
-    - cron: "0 15 * * *"
+    - cron: "0 6 * * *"
   workflow_dispatch: # lets you run it manually from the Actions tab
 
 permissions:
