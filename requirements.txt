@@ -1,5 +1,2 @@
-selenium
+selenium>=4.20
 python-dotenv
-smtplib
-selenium
-webdriver-manager
