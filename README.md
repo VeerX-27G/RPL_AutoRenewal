@@ -68,7 +68,8 @@ Open the **Actions** tab, choose **RPL Auto Renewal** on the left, and click **R
 On your computer the browser opens normally so you can watch it. On GitHub Actions it runs headless (no visible window) automatically.
  
 ## Notes and limitations
- 
+
+- **Name Environment Secrets:** BARCODE, PASSWORD, EMAIL, SENDER_PASSWORD if using GitHub Actions
 - **Website changes can break it.** The script finds buttons and fields with fixed XPaths, so if the library redesigns its site, the XPaths in `library_renewal.py` will need updating.
 - **Library renewal limits still apply.** The script can only renew books the library allows you to renew.
 - **Keep your secrets private.** Never commit your `.env` file or put credentials in the code. The workflow logs deliberately do not print book titles, because logs in a public repository can be seen by anyone.
