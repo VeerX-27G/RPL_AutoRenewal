@@ -13,12 +13,8 @@ from selenium.common import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from dotenv import load_dotenv
 from email.message import EmailMessage
-
-# Locally this loads .env; on GitHub Actions there is no .env, so it does nothing
-# and the values come from the workflow's environment (GitHub Secrets).
-load_dotenv()
+from datetime import datetime as dt
 
 # GitHub Actions always sets CI=true. Locally it is unset, so the browser opens
 # visibly exactly as before.
@@ -53,9 +49,30 @@ elements_to_be_scraped = {
     "Password Input": "/html/body/div[1]/header/div[2]/div/div[2]/div[2]/div/div/li/div/form/div[2]/input",
     "Login Button": "/html/body/div[1]/header/div[2]/div/div[2]/div[2]/div/div/li/div/form/input[1]",
     "Book Name": "/html/body/div[1]/div[1]/main/div[2]/div/div/div[2]/div/div[2]/div[2]/div/div/div/div[2]/div/div[1]/a",
-    "'Renew' Button": "/html/body/div[1]/div[1]/main/div[2]/div/div/div[2]/div/div[2]/div[2]/div/div/div/div[3]/div[2]/form/input[1]"
+    "'Renew' Button": "/html/body/div[1]/div[1]/main/div[2]/div/div/div[2]/div/div[2]/div[2]/div/div/div/div[3]/div[2]/form/input[1]",
+    "Due date": "/html/body/div[1]/div[1]/main/div[2]/div/div/div[2]/div/div[2]/div[2]/div/div/div/div[3]/div/span",
+    "Renewals left": "/html/body/div[1]/div[1]/main/div[2]/div/div/div[2]/div/div[2]/div[2]/div/div/div/div[3]/div/p/span",
 }
 
+today = dt.today().strftime("%d/%m/%Y")
+months = {
+    'Jan': '01',
+    'Feb': '02',
+    'Mar': '03',
+    'Apr': '04',
+    'May': '05',
+    'Jun': '06',
+    'Jul': '07',
+    'Aug': '08',
+    'Sep': '09',
+    'Oct': '10',
+    'Nov': '11',
+    'Dec': '12',
+}
+
+# Modify the date format of RPL to Python's date format
+def modify_date(date) -> str:
+   return f"{date[2]}/{months[date[1]]}/{dt.now().year}"
 
 def build_driver():
     options = webdriver.ChromeOptions()
@@ -116,14 +133,30 @@ try:
         while True:
             try:
                 book_name = driver.find_element(By.XPATH, elements_to_be_scraped["Book Name"]).text
-                msg.set_content(f"Book '{book_name}' renewed successfully.")
-                target_5 = wait.until(
-                    EC.element_to_be_clickable((By.XPATH, elements_to_be_scraped["'Renew' Button"]))
-                )
-                target_5.click()
-                server.send_message(msg)
-                # Book titles are deliberately not printed: workflow logs can be public.
-                print("🚀 Email sent successfully!")
+                # If today's date matches book's renewal date, renew it and send an email
+                renewal_date = modify_date(driver.find_element(By.XPATH, elements_to_be_scraped["Due date"]).text.split())
+                if renewal_date == today:
+                    try:                   
+                        target_5 = wait.until(
+                            EC.element_to_be_clickable((By.XPATH, elements_to_be_scraped["'Renew' Button"]))
+                        )
+                        target_5.click()
+                        msg.set_content(f"Book '{book_name}' renewed successfully.")
+                        server.send_message(msg)
+                        # Book titles are deliberately not printed: workflow logs can be public.
+                        print("🚀 Email sent successfully!")
+                    except (TimeoutException, NoSuchElementException):
+                        if int(driver.find_element(By.XPATH, elements_to_be_scraped["Renewals left"]).text) == 0:
+                            msg.set_content(f"Book '{book_name}' cannot be renewed because you have no renewals left. Please return the book to a Regina Public Library today.")
+                            server.send_message(msg)
+                            print("🚀 Email sent successfully!")
+                            time.sleep(3)
+                        else:
+                            # TODO: to be fixed. Borrow two or more books and test it.
+                            break
+                else:
+                    # TODO: to be fixed. Borrow two or more books and test it.
+                    break
             except (TimeoutException, NoSuchElementException):
                 msg.set_content("No more books to be renewed today")
                 server.send_message(msg)
