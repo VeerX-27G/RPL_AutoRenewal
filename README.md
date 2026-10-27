@@ -31,11 +31,11 @@ Go to **Settings -> Secrets and variables -> Actions -> New repository secret** 
  
 ### 2. Check the schedule
  
-The workflow in `.github/workflows/library_renewal.yaml` runs every day at **15:00 UTC (9:00 AM in Regina)**. To change the time, edit the `cron` line:
+The workflow in `.github/workflows/library_renewal.yaml` runs every day at **06:00 UTC (12:00 AM in Regina)**. To change the time, edit the `cron` line:
  
 ```yaml
 schedule:
-  - cron: "0 15 * * *"
+  - cron: "0 6 * * *"
 ```
  
 Saskatchewan does not use daylight saving time, so Regina is always UTC-6.
@@ -69,7 +69,7 @@ On your computer the browser opens normally so you can watch it. On GitHub Actio
  
 ## Notes and limitations
 
-- **Name Environment Secrets:** BARCODE, PASSWORD, EMAIL, SENDER_PASSWORD if using GitHub Actions
+- **Name Environment Secrets:** BARCODE, PASSWORD, EMAIL, SENDER_PASSWORD if using GitHub Actions.
 - **Website changes can break it.** The script finds buttons and fields with fixed XPaths, so if the library redesigns its site, the XPaths in `library_renewal.py` will need updating.
 - **Library renewal limits still apply.** The script can only renew books the library allows you to renew.
 - **Keep your secrets private.** Never commit your `.env` file or put credentials in the code. The workflow logs deliberately do not print book titles, because logs in a public repository can be seen by anyone.
