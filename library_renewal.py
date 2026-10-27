@@ -15,6 +15,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from email.message import EmailMessage
 from datetime import datetime as dt
+from dotenv import load_dotenv
+
+# Loads environment variables if running on a machine, but has not effect in GitHub actions.
+load_dotenv()
 
 # GitHub Actions always sets CI=true. Locally it is unset, so the browser opens
 # visibly exactly as before.
@@ -70,7 +74,7 @@ months = {
     'Dec': '12',
 }
 
-# Modify the date format of RPL to Python's date format
+# Modify the book's renewal date format to Python's date format
 def modify_date(date) -> str:
    return f"{date[2]}/{months[date[1]]}/{dt.now().year}"
 
